@@ -50,16 +50,20 @@ function UnitBase (name='no name', hp=0, mp=0, x=0, y=0, size=0, damage=0, exp=0
         this.level += value;
         let hpInc = 0;
         let damInc = 0;
+        let shieldInc = 0;
         if(this.type == 'human') {
             hpInc = 100;
             damInc = 10;
+            shieldInc = 5;
         } else {
             hpInc = 50;
             damInc = 2;
+            shieldInc = 2;
         }
 
         this.hp = this.maxhp = this.hp + value*hpInc;
         this.damage += this.level*damInc;
+        this.shield += this.level*shieldInc;
     }
     this.attack = function (target) {
         if(this.damage >= target.shield) {
