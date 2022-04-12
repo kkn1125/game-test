@@ -159,8 +159,6 @@ export const Model = function () {
     }
 
     this.handleUnitMove = function (e) {
-        e.preventDefault();
-        
         const key = e.key.toLowerCase();
         if(key == 'arrowleft') {
             this.move(-1);
