@@ -1,0 +1,12 @@
+{
+    "name": "my-project",
+    "collectCoverage": true,
+    "moduleFileExtensions": ["js", "mjs"],
+    "transform": {
+        "^.+\\.js$": "babel-jest",
+        "^.+\\.mjs$": "babel-jest"
+    },
+    "testRegex": "((\\.|/*.)(test))\\.js?$",
+    "testEnvironment": "jsdom",
+    "verbose": true
+}
