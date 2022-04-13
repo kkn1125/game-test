@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import {store} from '../src/store';
+import store from '../assets/utils/store';
 
 describe('상태 관리 테스트', () => {
     test('값 저장', () => {

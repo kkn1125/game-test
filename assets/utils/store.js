@@ -1,4 +1,4 @@
-export const store = new Proxy({}, {
+export default new Proxy({id:0}, {
     /* istanbul ignore next */
     set (thisArg, key, val, proxy) {
         thisArg[key] = val;
