@@ -3,17 +3,19 @@ const BaseSetting = {
         default: {
             name: 'no name',
             gravity: 1,
-        }
+        },
+        SPEED: 3,
     },
     player: {
         default: {
             AUTO_EARN_TIME: 100,
             EARN_VALUE: 1,
+            GROUND_RATIO: 0.83,
+            level: 1,
             sizeX: 50,
             sizeY: 80,
-            x: 300,
+            x: 350,
             y: 0,
-            GROUND_RATIO: 0.83,
             name: 'no name',
             speed: 5,
             jump: 15,
@@ -39,8 +41,24 @@ const BaseSetting = {
     },
     monster: {
         default: {
-            name: 'test monster'
-        }
+            level: 1,
+            sizeX: 70,
+            sizeY: 50,
+            x: 850,
+            y: 0,
+            name: 'test monster',
+            jump: 15,
+            gravity: 0,
+            hp: 100,
+            mp: 5,
+            maxHp: 100,
+            maxMp: 5,
+            exp: 50,
+            money: 100,
+        },
+        LIMIT_AMOUNT: 100,
+        GROUND_RATIO: 0.785,
+        SPEED: 5,
     },
     item: {
         default: {
@@ -77,21 +95,28 @@ const BaseSetting = {
     },
     cloud: {
         default: {
+            amount: 12,
             width: 180,
             height: 80,
         },
         LIMIT_AMOUNT: 200,
+        START_LEVEL: 25,
         SPEED: 1,
     },
     cactus: {
+        default: {
+            amount: 5,
+            width: 60,
+            height: 70,
+        },
         LIMIT_AMOUNT: 450,
         SPEED: 1,
         GROUND_RATIO: 0.785,
     },
     ground: {
         default: {
-            amount: 5,
-            width: 300,
+            amount: 6,
+            width: 350,
             height: 100,
         },
         LIMIT_AMOUNT: 450,
