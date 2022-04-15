@@ -9,6 +9,7 @@ const BaseSetting = {
         default: {
             AUTO_EARN_TIME: 100,
             EARN_VALUE: 1,
+            level: 1,
             sizeX: 50,
             sizeY: 80,
             x: 300,

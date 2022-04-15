@@ -7,11 +7,11 @@ import {
     BaseUnit,
     Human
 } from "../Units.js";
-import * as Sample from "./__Items.js";
-import * as Status from "./__status.js";
+import * as Sample from "./Items.js";
+import * as Status from "./Status.js";
 
 const baseUnitInfo = BaseUnit.createBaseUnit({
-    name: 'kimson',
+    name: 'Tomson',
     sizeX: BaseSetting.player.default.sizeX,
     sizeY: BaseSetting.player.default.sizeY,
     x: BaseSetting.player.default.x,

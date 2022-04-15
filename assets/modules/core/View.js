@@ -1,8 +1,7 @@
 import store from '../../utils/store.js';
 import { Structure } from '../units/base/BaseOption.js';
 import { BaseSetting } from '../units/base/BaseSetting.js';
-import { farmer } from '../units/sample/__Units.js';
-import * as Units from '../units/Units.js';
+import { farmer } from '../units/sample/Units.js';
 
 export const View = function () {
     let jumped = 5;
