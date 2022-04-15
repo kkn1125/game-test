@@ -66,7 +66,6 @@ export const View = function () {
             ...monsterInto,
             y: store.canvas.height - (MONSER_HEIGHT) - BaseSetting.ground.default.height*BaseSetting.monster.GROUND_RATIO,
             dropItem: [],
-            width: 200,
             money: 500,
             speed: 1,
         });
