@@ -1,44 +1,96 @@
 import store from '../../utils/store.js';
 import { Structure } from '../units/base/BaseOption.js';
 import { BaseSetting } from '../units/base/BaseSetting.js';
-import { farmer } from '../units/sample/Units.js';
+import { Spider } from '../units/monster/BaseMonster.js';
+import { baseMonsterInfo, farmer, monsterInto, spiderInfo } from '../units/sample/Units.js';
+
+const MONSTERS = [];
+
+const CLOUDS = [];
+const CACTUSES = [];
+const GROUNDS = [];
+
+const UNIT_FARMER = store.unit = farmer;
+const CANVAS_WIDTH = 900;
+const CANVAS_HEIGHT = 700;
+
+const MONSER_HEIGHT = BaseSetting.monster.default.sizeY;
+
+const CACTUS_AMOUNT = BaseSetting.cactus.default.amount;
+const CACTUS_WIDTH = BaseSetting.cactus.default.width;
+const CACTUS_HEIGHT = BaseSetting.cactus.default.height;
+
+const GROUND_AMOUNT = BaseSetting.ground.default.amount;
+const GROUND_WIDTH = BaseSetting.ground.default.width;
+const GROUND_HEIGHT = BaseSetting.ground.default.height;
+
+const CLOUD_AMOUNT = BaseSetting.cloud.default.amount;
+const CLOUD_START_LEVEL = BaseSetting.cloud.START_LEVEL;
+
+const CHARACTER_SPEED = -(BaseSetting.commons.SPEED);
+
+let jumped = 5;
+let initGravity = 0;
+let frame = 0;
 
 export const View = function () {
-    let jumped = 5;
-    let initGravity = 0;
-    let frame = 0;
-    let clouds = [];
-    let cactuses = [];
-    let grounds = [];
-    const unit_farmer = store.unit = farmer;
-
     this.init = function (option) {
         store.options = option;
         store.canvas = document.querySelector('#app');
-        store.canvas.width = 900;
-        store.canvas.height = 700;
+        store.canvas.width = CANVAS_WIDTH;
+        store.canvas.height = CANVAS_HEIGHT;
 
         store.ctx = store.canvas.getContext('2d');
 
-        for(let i = 0; i < 5; i++) {
-            grounds.push(this.createGround(i));
+        for(let i = 0; i < 1; i++) {
+            MONSTERS.push(this.createMonster(i));
+        }
+
+        for(let i = 0; i < GROUND_AMOUNT; i++) {
+            GROUNDS.push(this.createGround(i));
+        }
+
+        for(let i = 0; i < CACTUS_AMOUNT; i++) {
+            CACTUSES.push(this.createCactus(i));
+        }
+
+        for(let i = 0; i < CLOUD_AMOUNT; i++) {
+            CLOUDS.push(this.createCloud(i));
         }
         
         requestAnimationFrame(this.renderGame.bind(this));
     }
 
-    this.createGround = function (idx) {
-        const GROUND_WIDTH = BaseSetting.ground.default.width;
-        const GROUND_HEIGHT = BaseSetting.ground.default.height;
+    this.createMonster = function () {
+        const newMonsterInfo = Spider.createSpider({
+            ...monsterInto,
+            y: store.canvas.height - (MONSER_HEIGHT) - BaseSetting.ground.default.height*BaseSetting.monster.GROUND_RATIO,
+            dropItem: [],
+            width: 200,
+            money: 500,
+            speed: 1,
+        });
+
+        store.spider = new Spider(newMonsterInfo);
         
+        store.spider.img = new Image();
+        store.spider.img.src = `./assets/images/spider.png`;
+        
+        return {
+            img: store.spider.img,
+            monster: store.spider,
+        };
+    }
+
+    this.createGround = function (idx) {
         const newGroundInfo = Structure.createStructure({
             name: 'ground',
             category: 'subject',
-            x: GROUND_WIDTH*idx,
+            x: GROUND_WIDTH * idx,
             y: store.canvas.height - GROUND_HEIGHT,
-            width: GROUND_WIDTH,
+            width: GROUND_WIDTH + 10,
             height: GROUND_HEIGHT,
-            speed: BaseSetting.ground.SPEED,
+            speed: BaseSetting.ground.SPEED + CHARACTER_SPEED,
         });
 
         store.ground = new Structure(newGroundInfo);
@@ -51,19 +103,17 @@ export const View = function () {
         };
     }
 
-    this.createCactus = function () {
-        const RANDOM = Math.random();
-        const WIDTH = 60;
-        const HEIGHT = 70;
-        const HEIGHT_INCREASE_VALUE = parseInt(RANDOM*50);
+    this.createCactus = function (idx) {
+        const CACTUS_HEIGHT_INCREASE_VALUE = parseInt(Math.random()*50);
+
         const newCactusInfo = Structure.createStructure({
             name: 'cactus',
             category: 'subject',
-            x: store.canvas.width,
-            y: store.canvas.height - (HEIGHT + HEIGHT_INCREASE_VALUE) - BaseSetting.ground.default.height*BaseSetting.cactus.GROUND_RATIO,
-            width: WIDTH,
-            height: (HEIGHT+HEIGHT_INCREASE_VALUE),
-            speed: RANDOM*BaseSetting.cactus.SPEED,
+            x: idx * parseInt(Math.random() * store.canvas.width),
+            y: store.canvas.height - (CACTUS_HEIGHT + CACTUS_HEIGHT_INCREASE_VALUE) - BaseSetting.ground.default.height*BaseSetting.cactus.GROUND_RATIO,
+            width: CACTUS_WIDTH,
+            height: (CACTUS_HEIGHT+CACTUS_HEIGHT_INCREASE_VALUE),
+            speed: Math.random()*BaseSetting.cactus.SPEED + CHARACTER_SPEED,
         });
 
         store.cactus = new Structure(newCactusInfo);
@@ -76,16 +126,17 @@ export const View = function () {
         };
     }
 
-    this.createCloud = function () {
-        const RANDOM_SIZE_RATIO = Math.random()*1;
+    this.createCloud = function (idx) {
+        const CLOUD_RANDOM_SIZE_RATIO = ((Math.random() * 2) + 1)/3;
+
         const newCloudInfo = Structure.createStructure({
             name: 'cloud',
             category: 'subject',
-            x: store.canvas.width,
-            y: 5+(75*Math.random()),
-            width: BaseSetting.cloud.default.width*RANDOM_SIZE_RATIO,
-            height: BaseSetting.cloud.default.height*RANDOM_SIZE_RATIO,
-            speed: Math.random()*BaseSetting.cloud.SPEED,
+            x: idx * parseInt(Math.random() * store.canvas.width),
+            y: CLOUD_START_LEVEL+(75*Math.random()),
+            width: BaseSetting.cloud.default.width * CLOUD_RANDOM_SIZE_RATIO,
+            height: BaseSetting.cloud.default.height * CLOUD_RANDOM_SIZE_RATIO,
+            speed: Math.random()*BaseSetting.cloud.SPEED + CHARACTER_SPEED,
         });
         store.cloud = new Structure(newCloudInfo);
         store.cloud.img = new Image();
@@ -125,49 +176,61 @@ export const View = function () {
         frame++;
         if(frame > 10000) frame = 0;
 
-        if(frame%BaseSetting.cloud.LIMIT_AMOUNT==0) {
-            clouds.push(this.createCloud());
-        }
-        if(frame%BaseSetting.cactus.LIMIT_AMOUNT==0) {
-            cactuses.push(this.createCactus());
-        }
+        // if(frame % BaseSetting.monster.default.LIMIT_AMOUNT == 0) {
+        //     MONSTERS.push(this.createMonster());
+        // }
+        // if(frame%BaseSetting.cactus.LIMIT_AMOUNT==0) {
+        //     CACTUSES.push(this.createCactus());
+        // }
         
         if(frame%BaseSetting.player.default.AUTO_EARN_TIME==0) {
-            unit_farmer.money += BaseSetting.player.default.EARN_VALUE;
+            UNIT_FARMER.money += BaseSetting.player.default.EARN_VALUE;
         }
         
         // cloud
-        clouds.forEach(({img, cloud}, idx)=>{
+        CLOUDS.forEach(({img, cloud}, idx)=>{
             store.ctx.drawImage(img, cloud.x, cloud.y, cloud.width, cloud.height);
             cloud.move(-BaseSetting.cloud.SPEED);
-            if(cloud.x+cloud.width<=0) {
-                clouds = [].concat(clouds.slice(0, idx),clouds.slice(idx+1));
+            if(cloud.x + cloud.width <= 0) {
+                cloud.x = store.canvas.width;
             }
         });
 
         // cactus
-        cactuses.forEach(({img, cactus}, idx)=>{
+        CACTUSES.forEach(({img, cactus}, idx)=>{
             store.ctx.drawImage(img, cactus.x, cactus.y, cactus.width, cactus.height);
             cactus.move(-BaseSetting.cactus.SPEED);
-            if(cactus.x+cactus.width<=0) {
-                cactuses = [].concat(cactuses.slice(0, idx),cactuses.slice(idx+1));
+            if(cactus.x + cactus.width <= 0) {
+                cactus.x = store.canvas.width;
+            }
+        });
+        
+
+        // monster
+        MONSTERS.forEach(({img, monster}, idx)=>{
+            store.ctx.drawImage(img, monster.x, monster.y, monster.sizeX, monster.sizeY);
+            // store.ctx.fillRect(monster.x,monster.y,monster.sizeX, monster.sizeY);
+
+            monster.move(-BaseSetting.monster.SPEED);
+            if(monster.x + monster.sizeX <= 0) {
+                monster.x = store.canvas.width;
             }
         });
         
         // player
-        const LIMIT_LEVEL = store.canvas.height - unit_farmer.sizeY - BaseSetting.ground.default.height*BaseSetting.player.default.GROUND_RATIO;
-        if(unit_farmer.y + initGravity >= LIMIT_LEVEL) {
-            unit_farmer.y = LIMIT_LEVEL;
-            unit_farmer.gravity = initGravity+=3;
+        const LIMIT_LEVEL = store.canvas.height - UNIT_FARMER.sizeY - BaseSetting.ground.default.height*BaseSetting.player.default.GROUND_RATIO;
+        if(UNIT_FARMER.y + initGravity >= LIMIT_LEVEL) {
+            UNIT_FARMER.y = LIMIT_LEVEL;
+            UNIT_FARMER.gravity = initGravity+=3;
             if(jumped>0) {
-                unit_farmer.jump();
+                UNIT_FARMER.jump();
                 jumped--;
             } else {
                 // 유닛 중력 초기화
-                unit_farmer.gravity = initGravity = 0;
+                UNIT_FARMER.gravity = initGravity = 0;
             }
         } else {
-            unit_farmer.y += BaseSetting.commons.default.gravity + unit_farmer.gravity++;
+            UNIT_FARMER.y += BaseSetting.commons.default.gravity + UNIT_FARMER.gravity++;
         }
 
         store.ctx.fillStyle = `#3c9fff`;
@@ -177,15 +240,16 @@ export const View = function () {
         } else {
             player.src = `./assets/images/unit-attack.png`;
         }
-        store.ctx.drawImage(player, unit_farmer.x, unit_farmer.y, unit_farmer.sizeX+(store.unit.attacked?30:0), unit_farmer.sizeY);
-        this.userInfo(unit_farmer);
+        store.ctx.drawImage(player, UNIT_FARMER.x, UNIT_FARMER.y, UNIT_FARMER.sizeX+(store.unit.attacked?30:0), UNIT_FARMER.sizeY);
+        this.userInfo(UNIT_FARMER);
 
-        // cloud
-        grounds.forEach(({img, ground}, idx)=>{
+        // ground
+        GROUNDS.forEach(({img, ground}, idx)=>{
             store.ctx.drawImage(img, ground.x, ground.y, ground.width, ground.height);
-            ground.move(-BaseSetting.ground.SPEED-1);
+            ground.move(-BaseSetting.ground.SPEED - 1);
             if(ground.x + ground.width <= 0) {
-                ground.x = store.canvas.width;
+                ground.x = (GROUNDS.length-1) * GROUND_WIDTH;
+                
             }
         });
 

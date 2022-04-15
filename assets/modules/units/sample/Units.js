@@ -1,5 +1,6 @@
 import { Structure } from "../base/BaseOption.js";
 import { BaseSetting } from "../base/BaseSetting.js";
+import { Monster, Spider } from "../monster/BaseMonster.js";
 import {
     Farmer
 } from "../player/BasePlayer.js";
@@ -79,6 +80,35 @@ const groundInfo = Structure.createStructure({
 
 const ground = new Structure(groundInfo);
 
+const baseMonsterInfo = BaseUnit.createBaseUnit({
+    name: 'Spider',
+    sizeX: BaseSetting.monster.default.sizeX,
+    sizeY: BaseSetting.monster.default.sizeY,
+    x: BaseSetting.monster.default.x,
+    y: BaseSetting.monster.default.y,
+    level: BaseSetting.monster.default.level,
+    exp: BaseSetting.monster.default.exp,
+    hp: BaseSetting.monster.default.hp,
+    mp: BaseSetting.monster.default.mp,
+    maxHp: BaseSetting.monster.default.maxHp,
+    maxMp: BaseSetting.monster.default.maxMp,
+    ability: Status.ability,
+    status: Status.status,
+});
+
+const monsterInto = Monster.createMonster({
+    ...baseMonsterInfo,
+    dropItem: [],
+    money: 100,
+});
+
+const spiderInfo = Spider.createSpider({
+    ...monsterInto,
+    category: 'bugs',
+});
+
+const spider = new Spider(spiderInfo);
+
 export {
     baseUnitInfo,
     humanInfo,
@@ -90,4 +120,8 @@ export {
     cactus,
     groundInfo,
     ground,
+    baseMonsterInfo,
+    monsterInto,
+    spiderInfo,
+    spider,
 };
