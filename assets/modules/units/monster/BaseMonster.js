@@ -1,5 +1,4 @@
 import {
-    extend,
     BaseUnit
 } from "../base/BaseUnit.js";
 
@@ -11,7 +10,7 @@ const Monster = function (info, monsters = {}) {
     this.select = false;
 }
 
-extend(Monster, BaseUnit);
+Monster.extend(BaseUnit);
 
 export {
     Monster

@@ -7,7 +7,12 @@ html, body {
     canvas {
         margin: 1rem;
         border: 3px solid gray;
-        // width: 90%;
-        // height: 90%;
+        width: 900px;
+        height: 700px;
+        background: rgb(60,159,255);
+        background: -moz-linear-gradient(180deg, rgba(60,159,255,1) 0%, rgba(83,171,255,1) 33%, rgba(129,194,255,1) 67%, rgba(182,220,255,1) 100%);
+        background: -webkit-linear-gradient(180deg, rgba(60,159,255,1) 0%, rgba(83,171,255,1) 33%, rgba(129,194,255,1) 67%, rgba(182,220,255,1) 100%);
+        background: linear-gradient(180deg, rgba(60,159,255,1) 0%, rgba(83,171,255,1) 33%, rgba(129,194,255,1) 67%, rgba(182,220,255,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#3c9fff",endColorstr="#b6dcff",GradientType=1);
     }
 }

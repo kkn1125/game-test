@@ -3,7 +3,7 @@ import * as mvc from './modules/Mvc.js';
 
 export default (function () {
     return {
-        init (option) {
+        init(option) {
             const view = new mvc.View();
             const model = new mvc.Model();
             const controller = new mvc.Controller();
