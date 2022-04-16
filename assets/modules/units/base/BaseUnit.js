@@ -25,6 +25,11 @@ const BaseUnit = function (info = {}) {
     this.status = info.status;
     this.maxJump = 50;
     this.gravity = BaseSetting.player.default.gravity;
+    this.collectingItem = function (monster) {
+        this.money += monster.money;
+        this.exp += monster.exp;
+        this.inventory.push(...monster.dropItem);
+    }
     this.showStatus = function () {
         this.status.show();
     };
@@ -32,15 +37,17 @@ const BaseUnit = function (info = {}) {
         this.ability.show();
     };
     this.attack = function (target) {
+        const totalDamage = this.ability.damage+this.status.power+this.equips.toolR.status.power+this.equips.toolR.ability.damage;
+        target.hp -= totalDamage;
         console.debug(`${target?.name||BaseSetting.commons.default.name}을 공격했다!`);
-        console.debug(`${this.ability.damage+this.status.power+this.equips.toolR.status.power+this.equips.toolR.ability.damage} 데미지를 입혔다!`);
+        console.debug(`${totalDamage} 데미지를 입혔다!`);
     };
     this.move = function (x) {
         this.x += x;
     };
     this.jumping = false;
     this.jump = function (y=BaseSetting.player.default.jump) {
-        console.debug(`점프 했다!`);
+        // console.debug(`점프 했다!`);
         let i=y;
         if(!this.jumping) {
             this.jumping = true;

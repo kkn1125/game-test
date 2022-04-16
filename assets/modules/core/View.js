@@ -4,6 +4,8 @@ import { BaseSetting } from '../units/base/BaseSetting.js';
 import { Spider } from '../units/monster/BaseMonster.js';
 import { baseMonsterInfo, farmer, monsterInto, spiderInfo } from '../units/sample/Units.js';
 
+const UNIT_OFFSET_X_MONSTER = 90;
+
 const MONSTERS = [];
 
 const CLOUDS = [];
@@ -32,6 +34,13 @@ const CHARACTER_SPEED = -(BaseSetting.commons.SPEED);
 let jumped = 5;
 let initGravity = 0;
 let frame = 0;
+let allMovingControl = true;
+let notice = false;
+let notice_y = 0;
+let attacked = false;
+let notice_attack = 0;
+let attack_notice_arr = [];
+const totalDamage = (unit) => unit.ability.damage+unit.status.power+unit.equips.toolR.status.power+unit.equips.toolR.ability.damage;
 
 export const View = function () {
     this.init = function (option) {
@@ -169,6 +178,67 @@ export const View = function () {
         // store.ctx.fillText(`stat. luck : ${status.luck}`, CENTERED_X, STEP_Y(1));
     }
 
+    this.monsterInfo = function (monster) {
+        store.ctx.font = `16px mono`;
+        store.ctx.textAlign = `center`;
+        const {x, y, money, level, name, hp, mp, maxHp, maxMp, status, ability} = monster;
+        const CENTERED_X = x + monster.sizeX / 2;
+        const STEP_Y = idx => y - 20*idx;
+        store.ctx.fillStyle = 'red';
+        store.ctx.fillText(`[ Lv.${level} ] ${name}`, CENTERED_X, STEP_Y(3));
+        store.ctx.fillStyle = 'red';
+        store.ctx.fillText(`HP [ ${hp} / ${maxHp} ]`, CENTERED_X, STEP_Y(2));
+        store.ctx.fillStyle = 'blue';
+        store.ctx.fillText(`MP [ ${mp} / ${maxMp} ]`, CENTERED_X, STEP_Y(1));
+        store.ctx.fillStyle = 'gray';
+        
+        // store.ctx.fillText(`stat. power : ${status.power}`, CENTERED_X, STEP_Y(4));
+        // store.ctx.fillText(`stat. dex : ${status.dex}`, CENTERED_X, STEP_Y(3));
+        // store.ctx.fillText(`stat. int : ${status.int}`, CENTERED_X, STEP_Y(2));
+        // store.ctx.fillText(`stat. luck : ${status.luck}`, CENTERED_X, STEP_Y(1));
+    }
+
+    this.noticeInfo = function (unit, monster, msg) {
+        const CENTERED_X = unit.x + unit.sizeX / 2;
+        const STEP_Y = idx => unit.y - 20*idx;
+        store.ctx.font = `16px mono`;
+        store.ctx.textAlign = `center`;
+        store.ctx.fillStyle = 'black';
+        store.ctx.fillText(msg, CENTERED_X, notice_y+STEP_Y(6));
+        store.ctx.fillText(`💰 ${monster.money}`, CENTERED_X, notice_y+STEP_Y(5));
+        store.ctx.fillText(`EXP ${monster.exp}`, CENTERED_X, notice_y+STEP_Y(4));
+        store.ctx.fillText(monster.dropItem, CENTERED_X, notice_y+STEP_Y(3));
+        notice_y--;
+        this.test = '';
+    }
+
+    this.monsterAttack = function (monster) {
+        if(!UNIT_FARMER.attacked) {
+            UNIT_FARMER.attacked = true;
+            setTimeout(() => {
+                UNIT_FARMER.attacked = false;
+                UNIT_FARMER.attack(monster);
+            }, 500);
+        }
+    }
+
+    this.attackNotice = function (unit, monster) {
+        const CENTERED_X = monster.x + monster.sizeX / 2;
+        const STEP_Y = idx => unit.y - 20*idx;
+
+        store.ctx.font = `16px mono`;
+        store.ctx.textAlign = `center`;
+        store.ctx.fillStyle = 'red';
+        
+        attack_notice_arr.forEach(({x, sizeY, dmg}, i)=>{
+            // i 값으로 하나씩 올려줘야함;
+            store.ctx.fillText(dmg, CENTERED_X, notice_attack+STEP_Y(i)-(unit.sizeY/2));
+        });
+
+        notice_attack--;
+        this.test = '';
+    }
+
     this.renderGame = function () {
         store.ctx.clearRect(0,0,store.canvas.width,store.canvas.height);
 
@@ -182,14 +252,15 @@ export const View = function () {
         //     CACTUSES.push(this.createCactus());
         // }
         
-        if(frame%BaseSetting.player.default.AUTO_EARN_TIME==0) {
-            UNIT_FARMER.money += BaseSetting.player.default.EARN_VALUE;
-        }
+        // 자동 돈 벌기
+        // if(frame%BaseSetting.player.default.AUTO_EARN_TIME==0) {
+        //     UNIT_FARMER.money += BaseSetting.player.default.EARN_VALUE;
+        // }
         
         // cloud
         CLOUDS.forEach(({img, cloud}, idx)=>{
             store.ctx.drawImage(img, cloud.x, cloud.y, cloud.width, cloud.height);
-            cloud.move(-BaseSetting.cloud.SPEED);
+            if(allMovingControl) cloud.move(-BaseSetting.cloud.SPEED);
             if(cloud.x + cloud.width <= 0) {
                 cloud.x = store.canvas.width;
             }
@@ -198,7 +269,7 @@ export const View = function () {
         // cactus
         CACTUSES.forEach(({img, cactus}, idx)=>{
             store.ctx.drawImage(img, cactus.x, cactus.y, cactus.width, cactus.height);
-            cactus.move(-BaseSetting.cactus.SPEED);
+            if(allMovingControl) cactus.move(-BaseSetting.cactus.SPEED);
             if(cactus.x + cactus.width <= 0) {
                 cactus.x = store.canvas.width;
             }
@@ -209,17 +280,83 @@ export const View = function () {
         MONSTERS.forEach(({img, monster}, idx)=>{
             store.ctx.drawImage(img, monster.x, monster.y, monster.sizeX, monster.sizeY);
             // store.ctx.fillRect(monster.x,monster.y,monster.sizeX, monster.sizeY);
-
-            monster.move(-BaseSetting.monster.SPEED);
-            if(monster.x + monster.sizeX <= 0) {
-                monster.x = store.canvas.width;
+            this.monsterInfo(monster);
+            if(UNIT_FARMER.x + UNIT_FARMER.sizeX + UNIT_OFFSET_X_MONSTER < monster.x) {
+                if(allMovingControl) monster.move(-BaseSetting.monster.SPEED);
+            } else {
+                allMovingControl = false;
+                if(frame%(UNIT_FARMER.ability.farmSpeed*50)==0) {
+                    this.monsterAttack(monster);
+                    attack_notice_arr.push({
+                        x: monster.x,
+                        sizeX: monster.sizeX,
+                        sizeY: monster.sizeY,
+                        dmg: totalDamage(UNIT_FARMER)
+                    });
+                    attacked = true;
+                }
             }
+            this.attackNotice(UNIT_FARMER, monster);
+
+            if(attacked) {
+                if(Math.abs(notice_attack)%100==0) {
+                    attacked = false;
+                    notice_attack = 0;
+                    attack_notice_arr.shift();
+                }
+            }
+
+            if(frame%200==0) {
+                monster.jump();
+            }
+
+            if(monster.hp <= 0) {
+                monster.die();
+                attack_notice_arr = [];
+                notice = true;
+                UNIT_FARMER.collectingItem(monster);
+            }
+
+            if(notice) {
+                new this.noticeInfo(UNIT_FARMER, monster, `전리품을 얻었다!`);
+                if(Math.abs(notice_y)%100==0) {
+                    notice = false;
+                    notice_y = 0;
+                }
+            }
+
+            if(!monster.live) {
+                monster.x = monster.sizeX + store.canvas.width;
+                monster.live = true;
+                monster.hp = monster.maxHp;
+                allMovingControl = true;
+            }
+            // if(monster.x + monster.sizeX <= 0) {
+            //     monster.x = store.canvas.width;
+            // }
         });
+
+        const LIMIT_MONSTER_LEVEL = store.canvas.height - store.spider.sizeY - BaseSetting.ground.default.height*BaseSetting.player.default.GROUND_RATIO;
+
+        if(store.spider.y + initGravity >= LIMIT_MONSTER_LEVEL) {
+            store.spider.y = LIMIT_MONSTER_LEVEL;
+            store.spider.gravity = initGravity+=3;
+            if(jumped>0) {
+                store.spider.jump();
+                jumped--;
+            } else {
+                // 유닛 중력 초기화
+                store.spider.gravity = initGravity = 0;
+            }
+        } else {
+            store.spider.y += BaseSetting.commons.default.gravity + store.spider.gravity++;
+        }
         
         // player
-        const LIMIT_LEVEL = store.canvas.height - UNIT_FARMER.sizeY - BaseSetting.ground.default.height*BaseSetting.player.default.GROUND_RATIO;
-        if(UNIT_FARMER.y + initGravity >= LIMIT_LEVEL) {
-            UNIT_FARMER.y = LIMIT_LEVEL;
+        const LIMIT_UNIT_LEVEL = store.canvas.height - UNIT_FARMER.sizeY - BaseSetting.ground.default.height*BaseSetting.player.default.GROUND_RATIO;
+
+        if(UNIT_FARMER.y + initGravity >= LIMIT_UNIT_LEVEL) {
+            UNIT_FARMER.y = LIMIT_UNIT_LEVEL;
             UNIT_FARMER.gravity = initGravity+=3;
             if(jumped>0) {
                 UNIT_FARMER.jump();
@@ -239,13 +376,14 @@ export const View = function () {
         } else {
             player.src = `./assets/images/unit-attack.png`;
         }
+
         store.ctx.drawImage(player, UNIT_FARMER.x, UNIT_FARMER.y, UNIT_FARMER.sizeX+(store.unit.attacked?30:0), UNIT_FARMER.sizeY);
         this.userInfo(UNIT_FARMER);
 
         // ground
         GROUNDS.forEach(({img, ground}, idx)=>{
             store.ctx.drawImage(img, ground.x, ground.y, ground.width, ground.height);
-            ground.move(-BaseSetting.ground.SPEED - 1);
+            if(allMovingControl) ground.move(-BaseSetting.ground.SPEED - 1);
             if(ground.x + ground.width <= 0) {
                 ground.x = (GROUNDS.length-1) * GROUND_WIDTH;
                 
